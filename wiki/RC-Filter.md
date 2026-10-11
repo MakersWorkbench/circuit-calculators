@@ -36,6 +36,17 @@ Open the **RC Filter** tab. It opens with 10 kΩ and 1 µF.
 5. For a delay or debounce circuit, read the charge times at the bottom: **3τ** is 95 % charged and **5τ** is 99.3 %. Pick R and C so those times fit your needs.
 6. Not getting the time you want? Change R or C and watch the numbers update. Doubling either one doubles the time.
 
+## Designing a filter for a cutoff you want
+
+Under the first calculator there is a second block, **Design a filter for a cutoff**. It works backwards.
+
+1. In **Cutoff frequency (Hz)**, type the cutoff you want, for example `1k`.
+2. Type **either** a resistance in **Resistance** (for example `10k`) **or** a capacitance in **Capacitance**, and leave the other box empty.
+3. Choose a **Standard values** series (E12 is a good start).
+4. Read **Exact capacitor value** (or resistor), **Nearest standard value**, **Actual cutoff with it**, and **Error from target**.
+
+The formula is **C = 1 ÷ (2π × R × fc)**, or **R = 1 ÷ (2π × C × fc)**. Example: 10 kΩ and a 1 kHz target need 15.92 nF. The nearest E12 capacitor is 15 nF, which gives a real cutoff of 1.06 kHz (+6.1 %). Capacitors are the looser part, so choose the capacitor first, then trim R using a series or parallel pair from [Series and Parallel Resistors](Series-and-Parallel-Resistors).
+
 ## Worked example
 
 R = 10 kΩ and C = 1 µF give **τ = 10 ms** and a cutoff of **15.9 Hz**. The capacitor is 95 % charged after 30 ms and 99.3 % after 50 ms. As a low-pass filter, anything much above 16 Hz is progressively attenuated.

@@ -1,6 +1,6 @@
 # Circuit Calculators
 
-Free electronics calculators for makers, by [TheMakersWorkbench.com](https://www.themakersworkbench.com). One page, thirteen tabs, no build step and no dependencies. Type values with prefixes like `4.7k`, `100n`, or `20m`, and the answers update as you type, with the formula and the working shown.
+Free electronics calculators for makers, by [TheMakersWorkbench.com](https://www.themakersworkbench.com). One page, twenty calculators, no build step and no dependencies. Type values with prefixes like `4.7k`, `100n`, or `20m`, and the answers update as you type, with the formula and the working shown.
 
 ![Circuit Calculators](wiki/images/overview.png)
 
@@ -13,14 +13,21 @@ Free electronics calculators for makers, by [TheMakersWorkbench.com](https://www
 | Voltage Divider | Searches E12, E24, E48, or E96 pairs for a target output. Shows error, divider current, resistor power, loaded output, and output impedance. |
 | Resistors S/P | Series and parallel totals, and a search for the closest combination to a target. |
 | Capacitors S/P | Series and parallel totals, and a search for the closest combination to a target. |
-| RC Filter | Time constant, cutoff frequency, and charge times. |
-| LC & Reactance | Resonant frequency and reactance. |
+| RC Filter | Time constant, cutoff frequency, charge times, and a designer that finds R or C for a cutoff. |
+| LC & Reactance | Resonant frequency, reactance, Q, and bandwidth. |
 | 555 Timer | Astable frequency and duty cycle, monostable pulse length. |
-| LM317 | Resistor for a target voltage, or voltage from the resistors. |
+| LM317 | Resistor for a target voltage, voltage from the resistors, or a constant-current resistor. |
 | Wire Gauge | AWG size, resistance, voltage drop, and power lost. |
 | I²C Pull-up | Allowed pull-up range for 100 kHz, 400 kHz, and 1 MHz buses. |
 | Battery Life | Run time from capacity, load, sleep current, and duty cycle. |
 | BJT Switch | Base resistor for saturating an NPN transistor. |
+| MOSFET Switch | Conduction loss, drop, and gate resistor. |
+| Op-Amp Gain | Inverting, non-inverting, summing, and difference stages. |
+| Zener Regulator | Series resistor and power ratings. |
+| Divider Tolerance | Worst-case divider output for a resistor tolerance. |
+| Current Shunt | Shunt value, power, and amplifier gain. |
+| NTC Thermistor | Temperature and resistance from the Beta equation. |
+| Decibels | dB, dBm, watts, and ratios. |
 
 ## Run it
 

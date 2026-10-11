@@ -1,6 +1,6 @@
 # Circuit Calculators
 
-Free electronics calculators for makers, by [TheMakersWorkbench.com](https://www.themakersworkbench.com). Thirteen tabs, one page, nothing to install.
+Free electronics calculators for makers, by [TheMakersWorkbench.com](https://www.themakersworkbench.com). Twenty calculators, one page, nothing to install.
 
 ![Circuit Calculators](images/overview.png)
 
@@ -17,16 +17,23 @@ Each page explains the theory, gives the formulas, shows how to use the tab step
 - [Ohm's Law and Power](Ohms-Law-and-Power)
 - [LED Resistor](LED-Resistor)
 - [Voltage Divider](Voltage-Divider)
+- [Divider Tolerance](Divider-Tolerance)
 - [Series and Parallel Resistors](Series-and-Parallel-Resistors)
 - [Series and Parallel Capacitors](Series-and-Parallel-Capacitors)
 - [RC Filter](RC-Filter)
 - [LC Resonance and Reactance](LC-Resonance-and-Reactance)
 - [555 Timer](555-Timer)
+- [Op-Amp Gain](Op-Amp-Gain)
+- [Zener Regulator](Zener-Regulator)
 - [LM317 Regulator](LM317-Regulator)
+- [BJT Switch](BJT-Switch)
+- [MOSFET Switch](MOSFET-Switch)
+- [Current Shunt](Current-Shunt)
+- [NTC Thermistor](NTC-Thermistor)
+- [Decibels](Decibels)
 - [Wire Gauge and Voltage Drop](Wire-Gauge-and-Voltage-Drop)
 - [I²C Pull-up Resistors](I2C-Pull-up-Resistors)
 - [Battery Life](Battery-Life)
-- [BJT Switch](BJT-Switch)
 
 ## For developers
 

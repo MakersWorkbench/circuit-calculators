@@ -45,6 +45,15 @@ Open the **LC & Reactance** tab. It opens with 1 mH, 1 µF, and 1 kHz.
 
 **To design a tuner:** pick a target frequency, then adjust L and C until **Resonant frequency** matches it.
 
+## Q and bandwidth (optional)
+
+Fill in **Circuit resistance for Q (optional)** to find how sharp the resonance is. **Q** (the quality factor) says how selective the circuit is: high Q means a narrow, strong peak, low Q means a broad one. **Bandwidth = f0 ÷ Q**.
+
+- If the resistance is in **series** with the coil and capacitor, **Q = (1 ÷ R) × √(L ÷ C)**.
+- If the resistance is **in parallel** across them, **Q = R × √(C ÷ L)**.
+
+The tool shows both, so use the one that matches where your resistance sits. Example: 1 mH and 1 µF with 10 Ω in series gives Q ≈ 3.16 and a bandwidth of about 1.59 kHz around the 5.03 kHz resonance.
+
 ## Worked example
 
 L = 1 mH and C = 1 µF resonate at **5.03 kHz** with a characteristic impedance of **31.6 Ω**. At 1 kHz the coil has only **6.28 Ω** of reactance but the capacitor has **159 Ω**. As frequency climbs toward 5 kHz these two meet.

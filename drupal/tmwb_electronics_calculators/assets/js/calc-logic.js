@@ -202,6 +202,10 @@
     if (o.L > 0 && o.C > 0) { r.f0 = 1 / (2 * Math.PI * Math.sqrt(o.L * o.C)); r.Z0 = Math.sqrt(o.L / o.C); }
     if (o.f > 0 && o.L > 0) r.XL = 2 * Math.PI * o.f * o.L;
     if (o.f > 0 && o.C > 0) r.XC = 1 / (2 * Math.PI * o.f * o.C);
+    if (o.R > 0 && r.f0 !== undefined) {
+      r.Qseries = Math.sqrt(o.L / o.C) / o.R; r.BWseries = r.f0 / r.Qseries;
+      r.Qparallel = o.R * Math.sqrt(o.C / o.L); r.BWparallel = r.f0 / r.Qparallel;
+    }
     if (!Object.keys(r).length) return { error: 'Enter an inductance and capacitance (for resonance), or a frequency with either one (for reactance).' };
     return r;
   }
@@ -269,8 +273,127 @@
     return r;
   }
 
+
+  /* ---------- additions: RC reverse, LM317 current source, MOSFET, op-amp, zener, tolerance, shunt, NTC, dB ---------- */
+
+  /** Give the cutoff and one of R or C; get the other, rounded to a standard value, with the actual cutoff. */
+  function rcReverse(o) {
+    if (!(o.fc > 0)) return { error: 'Enter the cutoff frequency you want.' };
+    var haveR = o.R > 0, haveC = o.C > 0;
+    if (haveR === haveC) return { error: 'Fill in exactly one of R or C. The other is calculated.' };
+    var series = o.series || 'E12';
+    if (haveR) {
+      var C = 1 / (2 * Math.PI * o.R * o.fc), Cs = nearest(series, C, 'nearest');
+      return { solve: 'C', exact: C, std: Cs, fcActual: 1 / (2 * Math.PI * o.R * Cs), errPct: (1 / (2 * Math.PI * o.R * Cs) - o.fc) / o.fc * 100 };
+    }
+    var R = 1 / (2 * Math.PI * o.C * o.fc), Rs = nearest(series, R, 'nearest');
+    return { solve: 'R', exact: R, std: Rs, fcActual: 1 / (2 * Math.PI * Rs * o.C), errPct: (1 / (2 * Math.PI * Rs * o.C) - o.fc) / o.fc * 100 };
+  }
+
+  /** LM317 as a constant-current source: I = 1.25 V / R. */
+  function lm317cc(o) {
+    if (!(o.I > 0)) return { error: 'Enter the current you want.' };
+    var R = VREF317 / o.I, Rs = nearest('E96', R, 'nearest'), I = VREF317 / Rs, P = I * I * Rs;
+    return { R: R, Rstd: Rs, Iact: I, P: P, rec: recommendWatts(P, 2) };
+  }
+
+  /** MOSFET low-side switch: conduction loss, drop, gate drive. Rds(on) must be the datasheet value at your drive voltage. */
+  function mosfet(o) {
+    if (!(o.Id > 0 && o.Vdrive > 0 && o.Rds > 0)) return { error: 'Enter the load current, the gate drive voltage, and Rds(on).' };
+    var r = { P: o.Id * o.Id * o.Rds, drop: o.Id * o.Rds };
+    r.rec = recommendWatts(r.P, 2);
+    if (o.Vth > 0) r.vthOk = o.Vdrive > o.Vth;
+    if (o.Qg > 0 && o.f > 0) r.Igate = o.Qg * o.f;
+    if (o.Ipk > 0) { r.Rg = o.Vdrive / o.Ipk; r.RgStd = nearest('E24', r.Rg, 'up'); r.IpkActual = o.Vdrive / r.RgStd; }
+    return r;
+  }
+
+  /** Op-amp resistor gain stages. */
+  function opamp(o) {
+    var m = o.mode, r = {};
+    if (!(o.Rf > 0)) return { error: 'Enter the feedback resistor Rf.' };
+    if (m === 'inv' || m === 'non') {
+      if (o.G > 0 && !(o.Rin > 0)) {
+        if (m === 'non' && o.G <= 1) return { error: 'A non-inverting stage has a gain of at least 1.' };
+        var exact = m === 'inv' ? o.Rf / o.G : o.Rf / (o.G - 1);
+        r.RinExact = exact; r.Rin = nearest(o.series || 'E24', exact, 'nearest');
+      } else if (o.Rin > 0) r.Rin = o.Rin;
+      else return { error: 'Enter either the input resistor or a target gain.' };
+      r.gain = m === 'inv' ? -o.Rf / r.Rin : 1 + o.Rf / r.Rin;
+      if (o.V1 === o.V1 && isFinite(o.V1)) r.Vout = r.gain * o.V1;
+      if (m === 'inv') r.Zin = r.Rin;
+      return r;
+    }
+    if (m === 'sum') {
+      if (!(o.Rin > 0 && o.R2 > 0)) return { error: 'Enter both input resistors.' };
+      r.g1 = -o.Rf / o.Rin; r.g2 = -o.Rf / o.R2;
+      if (isFinite(o.V1) && isFinite(o.V2)) r.Vout = r.g1 * o.V1 + r.g2 * o.V2;
+      return r;
+    }
+    if (m === 'diff') {
+      if (!(o.Rin > 0)) return { error: 'Enter the input resistor R1 (R2 is set equal to R1, and R4 equal to Rf).' };
+      r.gain = o.Rf / o.Rin;
+      if (isFinite(o.V1) && isFinite(o.V2)) r.Vout = r.gain * (o.V2 - o.V1);
+      return r;
+    }
+    return { error: 'Unknown mode.' };
+  }
+
+  /** Zener shunt regulator with a series resistor. */
+  function zener(o) {
+    if (!(o.Vin > o.Vz && o.Vz > 0 && o.Iload >= 0 && o.Iz > 0)) return { error: 'Enter an input voltage above the zener voltage, the zener voltage, the load current, and the bias current.' };
+    var R = (o.Vin - o.Vz) / (o.Iz + o.Iload), Rs = nearest('E24', R, 'down') || R;
+    var Itot = (o.Vin - o.Vz) / Rs, Iz = Itot - o.Iload, Pnoload = o.Vz * Itot;
+    return { R: R, Rstd: Rs, Itot: Itot, Iz: Iz, Pr: Itot * Itot * Rs, Pz: o.Vz * Iz, PzNoLoad: Pnoload, recZ: recommendWatts(Pnoload, 1.5), recR: recommendWatts(Itot * Itot * Rs, 2) };
+  }
+
+  /** Worst-case divider output with resistor tolerance. */
+  function tolerance(o) {
+    if (!(o.Vin > 0 && o.R1 > 0 && o.R2 > 0 && o.tol >= 0)) return { error: 'Enter the input voltage, both resistors, and the tolerance.' };
+    var t = o.tol / 100, nom = o.Vin * o.R2 / (o.R1 + o.R2);
+    var hi = o.Vin * (o.R2 * (1 + t)) / (o.R1 * (1 - t) + o.R2 * (1 + t));
+    var lo = o.Vin * (o.R2 * (1 - t)) / (o.R1 * (1 + t) + o.R2 * (1 - t));
+    return { nom: nom, min: lo, max: hi, minPct: (lo - nom) / nom * 100, maxPct: (hi - nom) / nom * 100 };
+  }
+
+  /** Current-sense shunt: R = Vsense / I. */
+  function shunt(o) {
+    if (!(o.I > 0 && o.Vs > 0)) return { error: 'Enter the maximum current and the sense voltage you can tolerate.' };
+    var R = o.Vs / o.I, Rs = nearest('E96', R, 'down') || R, Vs = o.I * Rs, P = o.I * o.I * Rs, r = { R: R, Rstd: Rs, Vsense: Vs, P: P, rec: recommendWatts(P, 2) };
+    if (o.Vfs > 0) r.gain = o.Vfs / Vs;
+    return r;
+  }
+
+  /** NTC thermistor, beta equation. mode 'R2T' or 'T2R'. Temperatures in degrees C. */
+  function ntc(o) {
+    if (!(o.R0 > 0 && o.B > 0 && isFinite(o.T0))) return { error: 'Enter the nominal resistance, its temperature, and the B value.' };
+    var T0 = o.T0 + 273.15;
+    if (o.mode === 'T2R') {
+      if (!isFinite(o.T)) return { error: 'Enter a temperature.' };
+      return { R: o.R0 * Math.exp(o.B * (1 / (o.T + 273.15) - 1 / T0)) };
+    }
+    if (!(o.R > 0)) return { error: 'Enter the measured resistance.' };
+    var T = 1 / (1 / T0 + Math.log(o.R / o.R0) / o.B);
+    return { T: T - 273.15, F: (T - 273.15) * 9 / 5 + 32 };
+  }
+
+  /** Decibel conversions. */
+  function decibels(o) {
+    var v = o.value;
+    if (!isFinite(v)) return { error: 'Enter a value.' };
+    switch (o.mode) {
+      case 'v2db': if (!(v > 0)) return { error: 'The ratio must be greater than zero.' }; return { out: 20 * Math.log10(v), unit: 'dB' };
+      case 'p2db': if (!(v > 0)) return { error: 'The ratio must be greater than zero.' }; return { out: 10 * Math.log10(v), unit: 'dB' };
+      case 'db2v': return { out: Math.pow(10, v / 20), unit: '\u00d7 (voltage ratio)' };
+      case 'db2p': return { out: Math.pow(10, v / 10), unit: '\u00d7 (power ratio)' };
+      case 'dbm2w': return { out: 1e-3 * Math.pow(10, v / 10), unit: 'W' };
+      case 'w2dbm': if (!(v > 0)) return { error: 'Power must be greater than zero.' }; return { out: 10 * Math.log10(v / 1e-3), unit: 'dBm' };
+    }
+    return { error: 'Unknown mode.' };
+  }
+
   return { E6: E6, E12: E12, E24: E24, E48: E48, E96: E96, SERIES: SERIES, seriesValues: seriesValues, nearest: nearest, fmt: fmt, parse: parse,
     WATTS: WATTS, recommendWatts: recommendWatts, ohm: ohm, led: led, divider: divider, dividerStats: dividerStats, sumList: sumList, recipList: recipList,
     findCombo: findCombo, rc: rc, reactance: reactance, timer555: timer555, lm317: lm317, awgDiameterMm: awgDiameterMm, wire: wire, i2c: i2c, I2C_MODES: I2C_MODES,
-    battery: battery, bjtSwitch: bjtSwitch };
+    battery: battery, bjtSwitch: bjtSwitch, rcReverse: rcReverse, lm317cc: lm317cc, mosfet: mosfet, opamp: opamp, zener: zener, tolerance: tolerance, shunt: shunt, ntc: ntc, decibels: decibels };
 });

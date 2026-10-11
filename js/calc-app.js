@@ -9,7 +9,7 @@
   var APP = {
     name: 'Circuit Calculators',
     tag: 'The everyday electronics math, with the working shown',
-    intro: 'Thirteen free calculators for makers: Ohm’s law, LED resistors, voltage dividers, series and parallel networks, filters, timers, regulators, wire, buses, batteries, and transistor switches. Type values with prefixes like 4.7k, 10u, or 330m, and the answers update as you type.',
+    intro: 'Twenty free calculators for makers: Ohm’s law, LED resistors, voltage dividers, series and parallel networks, filters, timers, regulators, op-amps, wire, buses, batteries, thermistors, decibels, and transistor and MOSFET switches. Type values with prefixes like 4.7k, 10u, or 330m, and the answers update as you type.',
     site: 'https://www.themakersworkbench.com',
     repo: 'https://github.com/MakersWorkbench/circuit-calculators',
     wiki: 'https://github.com/MakersWorkbench/circuit-calculators/wiki',
@@ -291,16 +291,38 @@
     }));
   } });
 
+  (function () {
+    var t = TABS[TABS.length - 1], orig = t.build;
+    t.build = function (pane) {
+      orig(pane);
+      pane.appendChild(block({
+        title: 'Design a filter for a cutoff', blurb: 'Know the cutoff you want? Enter it and <b>one</b> of R or C. Leave the other blank, and you get the missing part, rounded to a standard value, with the cutoff you will really get.',
+        fields: [{ id: 'fc', label: 'Cutoff frequency (Hz)', def: '1k' }, { id: 'R', label: 'Resistance (' + OHM + ', or blank)', def: '10k' }, { id: 'C', label: 'Capacitance (F, or blank)', def: '' },
+          { id: 'series', label: 'Standard values', def: 'E12', options: [['E6', 'E6'], ['E12', 'E12'], ['E24', 'E24'], ['E96', 'E96']] }],
+        run: function (v) {
+          var r = K.rcReverse(v); if (r.error) return r;
+          var unit = r.solve === 'C' ? 'F' : OHM, name = r.solve === 'C' ? 'capacitor' : 'resistor';
+          return { rows: [['Exact ' + name + ' value', fmt(r.exact, unit, 4)], ['Nearest standard value', fmt(r.std, unit), 1], ['Actual cutoff with it', fmt(r.fcActual, 'Hz'), 1], ['Error from target', pct(r.errPct)]],
+            notes: ['C = 1 \u00f7 (2\u03c0 R fc), or R = 1 \u00f7 (2\u03c0 C fc). Capacitors are usually the looser part, so choose a standard capacitor first and then fine-tune R with a series or parallel pair.'] };
+        }
+      }));
+    };
+  })();
+
   TABS.push({ id: 'lc', label: 'LC & Reactance', build: function (pane) {
     pane.appendChild(block({
       blurb: 'Coils and capacitors resist AC in proportion to frequency. A coil’s reactance X<sub>L</sub> = 2πfL grows with frequency; a capacitor’s X<sub>C</sub> = 1 ÷ (2πfC) shrinks. Where they are equal is the resonant frequency. Fill in whichever values you have; each answer appears when its inputs are present.',
-      fields: [{ id: 'L', label: 'Inductance (H)', def: '1m', hint: 'e.g. 10u' }, { id: 'C', label: 'Capacitance (F)', def: '1u', hint: 'e.g. 100n' }, { id: 'f', label: 'Frequency (Hz)', def: '1k', hint: 'e.g. 455k' }],
+      fields: [{ id: 'L', label: 'Inductance (H)', def: '1m', hint: 'e.g. 10u' }, { id: 'C', label: 'Capacitance (F)', def: '1u', hint: 'e.g. 100n' }, { id: 'f', label: 'Frequency (Hz)', def: '1k', hint: 'e.g. 455k' }, { id: 'R', label: 'Circuit resistance for Q (optional, ' + OHM + ')', def: '', hint: 'e.g. 10' }],
       run: function (v) {
         var r = K.reactance(v); if (r.error) return r;
         var rows = [];
         if (r.f0 !== undefined) { rows.push(['Resonant frequency', fmt(r.f0, 'Hz'), 1]); rows.push(['Characteristic impedance √(L/C)', fmt(r.Z0, OHM)]); }
         if (r.XL !== undefined) rows.push(['Inductive reactance X<sub>L</sub>', fmt(r.XL, OHM), 1]);
         if (r.XC !== undefined) rows.push(['Capacitive reactance X<sub>C</sub>', fmt(r.XC, OHM), 1]);
+        if (r.Qseries !== undefined) {
+          rows.push(['Q if R is in series with the coil', r.Qseries.toPrecision(3), 1]); rows.push(['Bandwidth (series)', fmt(r.BWseries, 'Hz')]);
+          rows.push(['Q if R is in parallel across it', r.Qparallel.toPrecision(3), 1]); rows.push(['Bandwidth (parallel)', fmt(r.BWparallel, 'Hz')]);
+        }
         return { rows: rows, notes: ['Resonant frequency f₀ = 1 ÷ (2π√(LC)). Real coils also have wire resistance and self-capacitance, so a built circuit lands a little off the calculated value.'] };
       }
     }));
@@ -326,9 +348,14 @@
     pane.appendChild(block({
       blurb: 'The LM317 is an adjustable linear regulator. A resistor R1 (usually 240 ' + OHM + ') sits between OUT and ADJ, and R2 from ADJ to ground sets the voltage: <b>Vout = 1.25 V × (1 + R2 ÷ R1) + I<sub>ADJ</sub> × R2</b>.',
       fields: [
-        { id: 'mode', label: 'I want to', def: 'solve', options: [['solve', 'Find R2 for a target voltage'], ['calc', 'Find the voltage from R1 and R2']] },
-        { id: 'R1', label: 'R1 (' + OHM + ')', def: '240' }, { id: 'Vout', label: 'Target output (V)', def: '9' }, { id: 'R2', label: 'R2 (' + OHM + ')', def: '1.5k' }],
+        { id: 'mode', label: 'I want to', def: 'solve', options: [['solve', 'Find R2 for a target voltage'], ['calc', 'Find the voltage from R1 and R2'], ['cc', 'Constant-current source']] },
+        { id: 'R1', label: 'R1 (' + OHM + ')', def: '240' }, { id: 'Vout', label: 'Target output (V)', def: '9' }, { id: 'R2', label: 'R2 (' + OHM + ')', def: '1.5k' }, { id: 'Icc', label: 'Target current (mA, current-source mode)', def: '20', scale: 1e-3 }],
       run: function (v) {
+        if (v.mode === 'cc') {
+          var c = K.lm317cc({ I: v.Icc }); if (c.error) return c;
+          return { rows: [['Calculated resistor', fmt(c.R, OHM, 4)], ['Nearest E96 value', fmt(c.Rstd, OHM), 1], ['Actual current', fmt(c.Iact, 'A'), 1], ['Resistor dissipation', fmt(c.P, 'W')], ['Recommended resistor rating', c.rec.label]],
+            notes: ['Wire the resistor between OUT and ADJ, and connect the load from ADJ to ground. The LM317 holds 1.25 V across the resistor, so the current is 1.25 V \u00f7 R. The input must be at least about 3 V above the load voltage plus 1.25 V. Good for charging and LED strings.'] };
+        }
         var r = K.lm317(v); if (r.error) return r;
         if (v.mode === 'solve') return { rows: [['Calculated R2', fmt(r.R2, OHM, 4)], ['Nearest E96 value', fmt(r.R2std, OHM), 1], ['Actual output with that value', fmt(r.Vout, 'V', 4), 1], ['Minimum input voltage', fmt(r.minVin, 'V')]],
           notes: ['Uses the datasheet typical I<sub>ADJ</sub> of 50 µA (it adds only a few tens of millivolts). Real chips vary, so expect a few percent of error; use a trim pot for precision.', 'The LM317 needs about 3 V of headroom (input at least 3 V above the output) and wastes the difference as heat. Add a heatsink for loads over a few hundred milliamps.'] };
@@ -402,6 +429,116 @@
           'Check the load current against the transistor’s rating, and add a flyback diode across any relay or motor.'];
         if (r.hfeOk === false) notes.unshift('<b>Warning:</b> the transistor’s minimum gain is below the forced beta, so it may not saturate. Use a lower forced beta, a transistor with more gain, or a Darlington or MOSFET.');
         return { rows: [['Base current needed', fmt(r.Ib, 'A'), 1], ['Calculated base resistor', fmt(r.Rb, OHM, 4)], ['Use this standard value (E24)', fmt(r.Rstd, OHM), 1], ['Actual base current', fmt(r.IbAct, 'A')], ['Base resistor dissipation', fmt(r.P, 'W')]], notes: notes };
+      }
+    }));
+  } });
+
+  TABS.push({ id: 'mosfet', label: 'MOSFET Switch', build: function (pane) {
+    pane.appendChild(block({
+      blurb: 'A MOSFET switches big loads with almost no gate current. Use a <b>logic-level</b> MOSFET when a 3.3 V or 5 V pin drives the gate. This finds the heat the MOSFET makes, the voltage it drops, and a gate resistor.',
+      fields: [
+        { id: 'Id', label: 'Load current (A)', def: '10' }, { id: 'Vdrive', label: 'Gate drive voltage (V)', def: '5' },
+        { id: 'Rds', label: 'Rds(on) at that voltage (m\u03a9)', def: '20', scale: 1e-3, hint: 'from the datasheet' }, { id: 'Vth', label: 'Gate threshold, max (V, optional)', def: '2' },
+        { id: 'Qg', label: 'Total gate charge (nC, optional)', def: '30', scale: 1e-9 }, { id: 'f', label: 'Switching frequency (Hz, optional)', def: '20k' },
+        { id: 'Ipk', label: 'Allowed gate peak current (mA, optional)', def: '20', scale: 1e-3 }],
+      run: function (v) {
+        var r = K.mosfet(v); if (r.error) return r;
+        var rows = [['Voltage drop across the MOSFET', fmt(r.drop, 'V'), 1], ['Heat in the MOSFET (I\u00b2 \u00d7 Rds)', fmt(r.P, 'W'), 1], ['Rating to plan for', r.rec.label]];
+        if (r.Igate !== undefined) rows.push(['Average gate drive current (Qg \u00d7 f)', fmt(r.Igate, 'A')]);
+        if (r.RgStd !== undefined) { rows.push(['Gate resistor (calculated)', fmt(r.Rg, OHM)]); rows.push(['Use this standard value (E24)', fmt(r.RgStd, OHM), 1]); rows.push(['Gate peak current with it', fmt(r.IpkActual, 'A')]); }
+        var notes = ['Use the Rds(on) the datasheet lists <b>at your gate voltage</b>. A part rated at 10 V can have much higher resistance at 3.3 V or 5 V.', 'Add a 10 k\u03a9 resistor from gate to ground so the MOSFET stays off while the microcontroller boots. Add a flyback diode across any motor or relay. For an N-channel MOSFET on the low side, connect the source to ground.'];
+        if (r.vthOk === false) notes.unshift('<b>Warning:</b> the gate drive is not above the maximum threshold voltage, so the MOSFET will not turn on reliably.');
+        return { rows: rows, notes: notes };
+      }
+    }));
+  } });
+
+  TABS.push({ id: 'opamp', label: 'Op-Amp Gain', build: function (pane) {
+    pane.appendChild(block({
+      blurb: 'Op-amp stages set their gain with two resistors. Pick the stage, enter Rf (the feedback resistor) and either the input resistor or the gain you want. Assumes an ideal op-amp, powered from a supply large enough that the output does not clip.',
+      fields: [
+        { id: 'mode', label: 'Stage', def: 'inv', options: [['inv', 'Inverting'], ['non', 'Non-inverting'], ['sum', 'Summing (two inputs, inverting)'], ['diff', 'Difference (matched resistors)']] },
+        { id: 'Rf', label: 'Rf, feedback resistor (' + OHM + ')', def: '10k' }, { id: 'Rin', label: 'R1 or Rg, input resistor (' + OHM + ')', def: '1k' },
+        { id: 'R2', label: 'R2, second input resistor (summing, ' + OHM + ')', def: '10k' }, { id: 'G', label: 'Or target gain (leave R1 blank)', def: '' },
+        { id: 'V1', label: 'Input V1 (V, optional)', def: '0.5' }, { id: 'V2', label: 'Input V2 (V, optional)', def: '' }, { id: 'series', label: 'Standard values', def: 'E24', options: SERIES_OPTS }],
+      run: function (v) {
+        var r = K.opamp(v); if (r.error) return r;
+        var rows = [];
+        if (r.RinExact !== undefined) { rows.push(['Input resistor needed', fmt(r.RinExact, OHM)]); rows.push(['Nearest standard value', fmt(r.Rin, OHM), 1]); }
+        if (r.gain !== undefined) rows.push(['Gain', (Math.round(r.gain * 1000) / 1000) + ' (' + (Math.round(20 * Math.log10(Math.abs(r.gain)) * 10) / 10) + ' dB)', 1]);
+        if (r.g1 !== undefined) { rows.push(['Gain from V1', String(Math.round(r.g1 * 1000) / 1000), 1]); rows.push(['Gain from V2', String(Math.round(r.g2 * 1000) / 1000), 1]); }
+        if (r.Vout !== undefined) rows.push(['Output voltage', fmt(r.Vout, 'V'), 1]);
+        var f = { inv: 'Gain = \u2212Rf \u00f7 R1. The output is upside down. Input resistance is R1.', non: 'Gain = 1 + Rf \u00f7 Rg. The output follows the input, never below 1\u00d7.',
+          sum: 'Vout = \u2212Rf \u00d7 (V1 \u00f7 R1 + V2 \u00f7 R2). With equal resistors it adds the inputs and inverts the sum.', diff: 'Gain = Rf \u00f7 R1 with R2 = R1 and the resistor to ground = Rf. Vout = gain \u00d7 (V2 \u2212 V1).' };
+        return { rows: rows, notes: [f[v.mode], 'The output cannot go beyond the supply rails. Check that your op-amp works at your supply voltage and handles the frequency and gain (gain-bandwidth product).'] };
+      }
+    }));
+  } });
+
+  TABS.push({ id: 'zener', label: 'Zener Regulator', build: function (pane) {
+    pane.appendChild(block({
+      blurb: 'A zener diode and a series resistor give a simple fixed voltage. The resistor must pass the load current <b>plus</b> enough current to keep the zener in regulation. It is for small loads only; larger loads need a regulator.',
+      fields: [{ id: 'Vin', label: 'Input voltage (V)', def: '12' }, { id: 'Vz', label: 'Zener voltage (V)', def: '5.1' },
+        { id: 'Iload', label: 'Maximum load current (mA)', def: '20', scale: 1e-3 }, { id: 'Iz', label: 'Zener bias current (mA)', def: '5', scale: 1e-3, hint: 'check the datasheet test current' }],
+      run: function (v) {
+        var r = K.zener(v); if (r.error) return r;
+        return { rows: [['Series resistor (calculated)', fmt(r.R, OHM, 4)], ['Use this standard value (E24)', fmt(r.Rstd, OHM), 1], ['Resistor dissipation', fmt(r.Pr, 'W')], ['Resistor rating', r.recR.label],
+          ['Zener current at full load', fmt(r.Iz, 'A')], ['Zener power with no load (worst case)', fmt(r.PzNoLoad, 'W'), 1], ['Zener rating to use', r.recZ.label]],
+          notes: ['R = (Vin \u2212 Vz) \u00f7 (Iz + Iload), rounded <b>down</b> so the zener always has enough current. With no load, all the current goes through the zener, so size it for that case.', 'The output varies with load and temperature, and real zeners are loose at low voltages. Check Vin droops: the regulator only works while Vin stays above Vz plus the resistor drop.'] };
+      }
+    }));
+  } });
+
+  TABS.push({ id: 'tol', label: 'Divider Tolerance', build: function (pane) {
+    pane.appendChild(block({
+      blurb: 'Real resistors are never exact. This finds the lowest and highest output a voltage divider can give if each resistor is at the edge of its tolerance in the worst direction.',
+      fields: [{ id: 'Vin', label: 'Input voltage (V)', def: '5' }, { id: 'R1', label: 'R1, top (' + OHM + ')', def: '4.7k' }, { id: 'R2', label: 'R2, bottom (' + OHM + ')', def: '9.1k' },
+        { id: 'tol', label: 'Resistor tolerance (%)', def: '5', hint: '1, 2, 5, 10' }],
+      run: function (v) {
+        var r = K.tolerance(v); if (r.error) return r;
+        return { rows: [['Nominal output', fmt(r.nom, 'V', 4), 1], ['Lowest possible output', fmt(r.min, 'V', 4) + ' (' + r.minPct.toFixed(1) + ' %)', 1], ['Highest possible output', fmt(r.max, 'V', 4) + ' (+' + r.maxPct.toFixed(1) + ' %)', 1]],
+          notes: ['The worst case is R1 at one extreme and R2 at the other. Two 1 % resistors can still move the output by close to 2 %. If the output matters, use tighter parts or trim it.'] };
+      }
+    }));
+  } });
+
+  TABS.push({ id: 'shunt', label: 'Current Shunt', build: function (pane) {
+    pane.appendChild(block({
+      blurb: 'To measure current, put a tiny resistor (a shunt) in the path and measure the voltage across it. A bigger shunt gives a bigger signal but wastes more voltage and power.',
+      fields: [{ id: 'I', label: 'Maximum current (A)', def: '5' }, { id: 'Vs', label: 'Sense voltage at that current (mV)', def: '100', scale: 1e-3 },
+        { id: 'Vfs', label: 'ADC full-scale voltage (V, optional)', def: '3.3', hint: 'to find the amplifier gain' }],
+      run: function (v) {
+        var r = K.shunt(v); if (r.error) return r;
+        var rows = [['Shunt resistor (calculated)', fmt(r.R, OHM, 4)], ['Standard value (E96, rounded down)', fmt(r.Rstd, OHM), 1], ['Sense voltage at full current', fmt(r.Vsense, 'V'), 1], ['Shunt dissipation', fmt(r.P, 'W'), 1], ['Rating to use', r.rec.label]];
+        if (r.gain !== undefined) rows.push(['Amplifier gain to reach ADC full scale', (Math.round(r.gain * 10) / 10) + '\u00d7']);
+        return { rows: rows, notes: ['R = Vsense \u00f7 I. Use a low-inductance, tight-tolerance, four-terminal (Kelvin) part for accuracy, and measure across the shunt\u2019s sense pads. A current-sense amplifier chip does the gain step.'] };
+      }
+    }));
+  } });
+
+  TABS.push({ id: 'ntc', label: 'NTC Thermistor', build: function (pane) {
+    pane.appendChild(block({
+      blurb: 'An NTC thermistor\u2019s resistance falls as it warms. The Beta equation turns a measured resistance into a temperature: <b>1/T = 1/T0 + (1/B) \u00d7 ln(R / R0)</b>, with temperatures in kelvin. Find R0, T0, and B on the thermistor\u2019s datasheet (a typical 10 k\u03a9 part is 10 k\u03a9 at 25 \u00b0C with B near 3950).',
+      fields: [{ id: 'mode', label: 'I want to', def: 'R2T', options: [['R2T', 'Find temperature from resistance'], ['T2R', 'Find resistance at a temperature']] },
+        { id: 'R0', label: 'Nominal resistance R0 (' + OHM + ')', def: '10k' }, { id: 'T0', label: 'Nominal temperature T0 (\u00b0C)', def: '25' }, { id: 'B', label: 'B value (K)', def: '3950' },
+        { id: 'R', label: 'Measured resistance (' + OHM + ')', def: '6.5k' }, { id: 'T', label: 'Temperature (\u00b0C)', def: '40' }],
+      run: function (v) {
+        var r = K.ntc(v); if (r.error) return r;
+        if (v.mode === 'T2R') return { rows: [['Resistance', fmt(r.R, OHM), 1]], notes: ['The Beta model is accurate near T0 and drifts over a wide range. For wide-range accuracy use the Steinhart\u2013Hart coefficients or the datasheet table.'] };
+        return { rows: [['Temperature', r.T.toFixed(1) + ' \u00b0C', 1], ['In Fahrenheit', r.F.toFixed(1) + ' \u00b0F']], notes: ['The Beta model is accurate near T0 and drifts over a wide range. To read it with a microcontroller, put the thermistor in a voltage divider with a fixed resistor equal to R0 and convert the ADC reading to resistance first. See the Component Marking Decoder for reading thermistor markings.'] };
+      }
+    }));
+  } });
+
+  TABS.push({ id: 'db', label: 'Decibels', build: function (pane) {
+    pane.appendChild(block({
+      blurb: 'Decibels compare two levels on a log scale. Voltage ratios use 20 \u00d7 log10 and power ratios use 10 \u00d7 log10. A <b>dBm</b> is power compared to 1 milliwatt, which radio people use constantly.',
+      fields: [{ id: 'mode', label: 'Convert', def: 'v2db', options: [['v2db', 'Voltage ratio to dB'], ['p2db', 'Power ratio to dB'], ['db2v', 'dB to voltage ratio'], ['db2p', 'dB to power ratio'], ['dbm2w', 'dBm to watts'], ['w2dbm', 'Watts to dBm']] },
+        { id: 'value', label: 'Value', def: '2', hint: 'ratio, dB, dBm, or watts' }],
+      run: function (v) {
+        var r = K.decibels(v); if (r.error) return r;
+        var out = r.unit === 'W' ? fmt(r.out, 'W') : String(Number(r.out.toPrecision(5))) + ' ' + r.unit;
+        return { rows: [['Result', out, 1]], notes: ['Handy anchors: +3 dB is double the power, +6 dB is double the voltage, +10 dB is ten times the power, +20 dB is ten times the voltage, and 0 dBm is 1 mW (30 dBm is 1 W).'] };
       }
     }));
   } });

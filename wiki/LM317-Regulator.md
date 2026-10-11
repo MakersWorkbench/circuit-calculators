@@ -39,6 +39,15 @@ Open the **LM317** tab. It opens set to find R2 for a 9 V output.
 2. Type both resistors in **R1 (Ω)** and **R2 (Ω)**.
 3. Read **Output voltage**.
 
+## Constant-current mode
+
+Change **I want to** to **Constant-current source** to use the LM317 as a current source (good for LED strings or charging). Wire one resistor between OUT and ADJ, with the load from ADJ to ground. The LM317 keeps 1.25 V across the resistor, so **I = 1.25 V ÷ R**.
+
+1. In **Target current (mA, current-source mode)**, type the current you want, for example `20`.
+2. Read **Nearest E96 value** (the resistor), **Actual current**, **Resistor dissipation**, and **Recommended resistor rating**.
+
+Example: 20 mA needs 62.5 Ω. The nearest E96 value is 61.9 Ω, which gives about 20.2 mA. The input must be at least about 3 V above the load voltage plus 1.25 V.
+
 ## Worked example
 
 You want 9 V with R1 = 240 Ω. The exact R2 is about 1,474 Ω. The nearest E96 value is 1.47 kΩ, which gives about **8.98 V**.

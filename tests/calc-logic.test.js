@@ -77,3 +77,37 @@ test('wire, i2c, battery, bjt', () => {
   near(C.battery({ cap: 1000, active: 50, sleep: 0.01, duty: 1, usable: 100 }).avg, 50 * 0.01 + 0.01 * 0.99, 1e-9);
   const b = C.bjtSwitch({ Ic: 0.1, Vdrive: 5, Vbe: 0.7, beta: 10, hfe: 100 }); near(b.Rb, 430, 1e-6); assert.equal(b.Rstd, 430); assert.ok(b.hfeOk);
 });
+
+test('rc reverse, lm317 cc', () => {
+  let r = C.rcReverse({ fc: 1000, R: 10000, C: NaN, series: 'E12' });
+  assert.equal(r.solve, 'C'); near(r.exact, 1 / (2 * Math.PI * 10000 * 1000), 1e-12); assert.equal(r.std, 1.5e-8);
+  r = C.rcReverse({ fc: 1000, R: NaN, C: 1e-7, series: 'E24' }); assert.equal(r.solve, 'R'); assert.ok(Math.abs(r.errPct) < 3);
+  assert.ok(C.rcReverse({ fc: 1000, R: 1, C: 1 }).error);
+  const c = C.lm317cc({ I: 0.02 }); near(c.R, 62.5, 1e-9); assert.equal(c.Rstd, 61.9); near(c.Iact, 1.25 / 61.9, 1e-9);
+});
+test('mosfet, opamp', () => {
+  const m = C.mosfet({ Id: 10, Vdrive: 5, Rds: 0.02, Vth: 2, Qg: 30e-9, f: 20000, Ipk: 0.02 });
+  near(m.P, 2, 1e-9); near(m.drop, 0.2, 1e-9); assert.ok(m.vthOk); near(m.Igate, 6e-4, 1e-9); assert.equal(m.RgStd, 270);
+  let o = C.opamp({ mode: 'inv', Rf: 10000, Rin: 1000, V1: 0.5 }); near(o.gain, -10, 1e-9); near(o.Vout, -5, 1e-9);
+  o = C.opamp({ mode: 'non', Rf: 9000, Rin: 1000, V1: 1 }); near(o.gain, 10, 1e-9);
+  o = C.opamp({ mode: 'non', Rf: 10000, G: 11, Rin: NaN, series: 'E24' }); near(o.RinExact, 1000, 1e-9); assert.equal(o.Rin, 1000);
+  o = C.opamp({ mode: 'sum', Rf: 10000, Rin: 10000, R2: 10000, V1: 1, V2: 2 }); near(o.Vout, -3, 1e-9);
+  o = C.opamp({ mode: 'diff', Rf: 20000, Rin: 10000, V1: 1, V2: 1.5 }); near(o.Vout, 1, 1e-9);
+});
+test('zener, tolerance, shunt', () => {
+  const z = C.zener({ Vin: 12, Vz: 5.1, Iload: 0.02, Iz: 0.005 }); near(z.R, 6.9 / 0.025, 1e-6); assert.equal(z.Rstd, 270); assert.ok(z.Iz >= 0.005);
+  const t = C.tolerance({ Vin: 5, R1: 10000, R2: 10000, tol: 1 }); near(t.nom, 2.5, 1e-9); near(t.max, 5 * 10100 / 20000, 1e-9); assert.ok(t.min < 2.5);
+  const s = C.shunt({ I: 5, Vs: 0.1, Vfs: 3.3 }); near(s.R, 0.02, 1e-12); assert.equal(s.Rstd, 0.02); near(s.P, 0.5, 1e-9); near(s.gain, 33, 1e-9);
+});
+test('ntc, decibels', () => {
+  near(C.ntc({ mode: 'R2T', R: 10000, R0: 10000, T0: 25, B: 3950 }).T, 25, 1e-9);
+  near(C.ntc({ mode: 'T2R', T: 50, R0: 10000, T0: 25, B: 3950 }).R, 3588, 20);
+  near(C.ntc({ mode: 'R2T', R: C.ntc({ mode: 'T2R', T: 40, R0: 10000, T0: 25, B: 3950 }).R, R0: 10000, T0: 25, B: 3950 }).T, 40, 1e-9);
+  near(C.decibels({ mode: 'v2db', value: 2 }).out, 6.0206, 1e-3); near(C.decibels({ mode: 'p2db', value: 2 }).out, 3.0103, 1e-3);
+  near(C.decibels({ mode: 'dbm2w', value: 30 }).out, 1, 1e-9); near(C.decibels({ mode: 'w2dbm', value: 0.001 }).out, 0, 1e-9);
+  near(C.decibels({ mode: 'db2v', value: 20 }).out, 10, 1e-9);
+});
+test('RLC Q', () => {
+  const r = C.reactance({ L: 1e-3, C: 1e-6, R: 10 }); near(r.Qseries, Math.sqrt(1000) / 10, 1e-9); near(r.BWseries, r.f0 / r.Qseries, 1e-6);
+  near(r.Qparallel, 10 * Math.sqrt(1e-3), 1e-9);
+});
