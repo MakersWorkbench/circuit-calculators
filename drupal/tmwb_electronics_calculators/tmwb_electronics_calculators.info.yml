@@ -1,0 +1,7 @@
+name: 'TMWB Electronics Calculators'
+type: module
+description: 'Embeds the Circuit Calculators (Ohm''s law, LED resistor, voltage divider, series and parallel networks, RC filter, 555 timer, LM317, wire gauge, I2C pull-up, battery life, and BJT switch) into content through a text filter placeholder.'
+core_version_requirement: ^10 || ^11
+package: TMWB
+dependencies:
+  - drupal:filter

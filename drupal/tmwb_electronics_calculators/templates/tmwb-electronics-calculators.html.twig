@@ -1,0 +1,34 @@
+{#
+/**
+ * @file
+ * Mount point and description for the Circuit Calculators.
+ *
+ * The tool (assets/js/calc-app.js) builds its own interface inside the mount
+ * element. The description below it is server-rendered so that search
+ * engines, screen readers, and visitors without JavaScript get real text.
+ *
+ * Available variables:
+ * - heading: heading level (h1 to h6) used for the tool's title.
+ * - features: array of [label, description] pairs for what the tool covers.
+ * - show_description: whether to render the description section.
+ */
+#}
+<div class="tmwb-electronics-calculators-wrapper">
+  <div class="tmwb-calc" id="tmwb-calc" data-heading="{{ heading }}">
+    <noscript>
+      {{ 'The Circuit Calculators need JavaScript.'|t }}
+    </noscript>
+  </div>
+  {% if show_description and features %}
+    <section class="tmwb-electronics-calculators-about" aria-labelledby="tec-about-title">
+      <h3 id="tec-about-title">{{ 'What the Circuit Calculators cover'|t }}</h3>
+      <p>{{ 'The Circuit Calculators are a free set of electronics calculators for makers. Pick a tab, type your values with prefixes like 4.7k, 100n, or 20m, and the answer updates as you type, with the formula and the working shown.'|t }}</p>
+      <ul>
+        {% for feature in features %}
+          <li><strong>{{ feature[0] }}</strong>: {{ feature[1] }}</li>
+        {% endfor %}
+      </ul>
+      <p>{{ 'The formulas are the standard textbook and datasheet ones and describe ideal parts. Real components have tolerance and drift, so confirm anything critical with the datasheet and a meter.'|t }}</p>
+    </section>
+  {% endif %}
+</div>

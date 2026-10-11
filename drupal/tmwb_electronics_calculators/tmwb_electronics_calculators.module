@@ -1,0 +1,25 @@
+<?php
+
+/**
+ * @file
+ * TMWB Electronics Calculators module.
+ */
+
+/**
+ * Implements hook_theme().
+ *
+ * Registers the Twig template that renders the tool's mount point and its
+ * server-rendered description.
+ */
+function tmwb_electronics_calculators_theme($existing, $type, $theme, $path) {
+  return [
+    'tmwb_electronics_calculators' => [
+      'variables' => [
+        'heading' => 'h2',
+        'features' => [],
+        'show_description' => TRUE,
+      ],
+      'template' => 'tmwb-electronics-calculators',
+    ],
+  ];
+}

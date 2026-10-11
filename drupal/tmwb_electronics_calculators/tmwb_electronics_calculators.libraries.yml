@@ -1,0 +1,15 @@
+calculators:
+  version: 1.0.0
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+    gpl-compatible: false
+  css:
+    component:
+      assets/calc.css: {}
+      css/tmwb-electronics-calculators.css: {}
+  js:
+    # calc-logic.js defines the TMWBCalc global that calc-app.js reads.
+    assets/js/calc-logic.js: {}
+    # calc-app.js mounts onto #tmwb-calc, so it must run after the markup exists.
+    assets/js/calc-app.js: { attributes: { defer: true } }
