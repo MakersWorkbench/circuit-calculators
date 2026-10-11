@@ -25,6 +25,17 @@ A single RC stage is first-order: it rolls off at 20 dB per decade (a tenfold fr
 
 Enter the **resistance** and **capacitance** (`10k` and `1u`, for example). The calculator gives the time constant, the cutoff frequency, the 10 to 90 % **rise time** (2.2 × τ, a standard way to describe an edge), and the time to reach 95 % and 99.3 %.
 
+## Step by step
+
+Open the **RC Filter** tab. It opens with 10 kΩ and 1 µF.
+
+1. In **Resistance (Ω)**, type the resistor value, for example `10k`.
+2. In **Capacitance (F)**, type the capacitor value with a prefix, for example `1u` for 1 µF or `100n` for 100 nF.
+3. Read **Time constant τ**. That is the time to reach 63 % charge.
+4. Read **Cutoff frequency**. A signal at that frequency is cut in half in power. This is the number to use if you are building a low-pass or high-pass filter.
+5. For a delay or debounce circuit, read the charge times at the bottom: **3τ** is 95 % charged and **5τ** is 99.3 %. Pick R and C so those times fit your needs.
+6. Not getting the time you want? Change R or C and watch the numbers update. Doubling either one doubles the time.
+
 ## Worked example
 
 R = 10 kΩ and C = 1 µF give **τ = 10 ms** and a cutoff of **15.9 Hz**. The capacitor is 95 % charged after 30 ms and 99.3 % after 50 ms. As a low-pass filter, anything much above 16 Hz is progressively attenuated.

@@ -24,6 +24,19 @@ Voltage lost in the wire is Ohm's law again: **drop = I × R**, and the wasted p
 
 You get the wire diameter and cross-section, resistance per meter and per foot, the total wire length counted, the total resistance, the voltage lost, the percentage of the supply that loses, and the power wasted as heat.
 
+## Step by step
+
+Open the **Wire Gauge** tab. It opens with 22 AWG, 10 m, and 2 A.
+
+1. In **Wire size (AWG, 0–40)**, type the gauge printed on your wire. A smaller number is thicker wire. If you only know the diameter, try a few sizes until **Wire diameter** matches.
+2. In **Length**, type how long the run is. Count one side only (the distance from the supply to the load).
+3. In **Length unit**, choose **meters** or **feet**.
+4. In **Current (A)**, type the current the load draws, for example `2`.
+5. In **Circuit**, leave **Round trip (out and back)** for a normal two-wire supply, since current travels the length twice. Choose **One way only** just for a single conductor.
+6. In **Supply voltage (optional)**, type your supply, for example `12`, so you can see the loss as a percentage.
+7. Read **Voltage lost in the wire** and **Voltage drop of supply**. If the percentage is more than about 3 %, choose a thicker wire (a smaller AWG number) and check again.
+8. **Power lost as heat** tells you how much energy is wasted in the wire itself.
+
 ## Worked example
 
 A 12 V device draws 2 A, 10 m away, on 22 AWG wire (round trip means 20 m of wire). Resistance is about 1.06 Ω, so the drop is **2.1 V, which is 17.6 % of the supply**, and 4.2 W is wasted as heat in the wire. Too much. Change to 16 AWG and the drop falls to about **0.53 V (4.4 %)**. A common design target is to keep the drop under about 3 %, and use a still thicker wire.

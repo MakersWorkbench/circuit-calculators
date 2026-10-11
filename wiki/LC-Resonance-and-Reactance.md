@@ -27,6 +27,24 @@ Fill in whichever values you have:
 
 Each answer appears when its inputs are there.
 
+## Step by step
+
+Open the **LC & Reactance** tab. It opens with 1 mH, 1 µF, and 1 kHz.
+
+**To find the frequency a coil and capacitor resonate at:**
+
+1. In **Inductance (H)**, type the coil value, for example `1m` for 1 mH or `10u` for 10 µH.
+2. In **Capacitance (F)**, type the capacitor, for example `1u` or `100n`.
+3. Read **Resonant frequency**. You can ignore the Frequency box for this.
+
+**To find how much a coil or capacitor resists AC at one frequency:**
+
+1. In **Frequency (Hz)**, type the frequency, for example `1k` or `455k`.
+2. Type either the **Inductance** or the **Capacitance** (or both).
+3. Read **Inductive reactance** (for the coil) or **Capacitive reactance** (for the capacitor). Each one only appears when you have filled in the matching value.
+
+**To design a tuner:** pick a target frequency, then adjust L and C until **Resonant frequency** matches it.
+
 ## Worked example
 
 L = 1 mH and C = 1 µF resonate at **5.03 kHz** with a characteristic impedance of **31.6 Ω**. At 1 kHz the coil has only **6.28 Ω** of reactance but the capacitor has **159 Ω**. As frequency climbs toward 5 kHz these two meet.

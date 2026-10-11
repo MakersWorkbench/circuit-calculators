@@ -34,6 +34,20 @@ The drawn schematic shows which resistor goes where.
 
 The formula assumes nothing draws current from the output. A real load changes that. The load sits in parallel with R2, lowering the bottom resistance and dragging Vout down. As a rule, the load resistance should be at least **10 times** the output impedance, or you should buffer the output (with an op-amp, for example). Enter a load resistance to see exactly how much it sags.
 
+## Step by step
+
+Open the **Voltage Divider** tab. It opens with 5 V in and 3.3 V out already filled in.
+
+1. In **Input voltage (V)**, type the higher voltage you start with, for example `5`.
+2. In **Desired output (V)**, type the lower voltage you want, for example `3.3`.
+3. In **Standard values**, choose the series of resistors you own or plan to buy. **E24** is a good start. Choose **E96** for the closest possible match.
+4. Leave **Min R1 + R2** at `1k` and **Max R1 + R2** at `100k` unless you need to save power (raise both) or need a stiffer output (lower both).
+5. If something will be connected to the output, type its resistance in **Load resistance (optional)**, for example `10k`. Leave it empty if the output only feeds a high-impedance input such as an analog pin.
+6. Look at the drawing. **R1** goes from the input voltage to the output point, and **R2** goes from the output point to ground.
+7. Read **R1 (top)** and **R2 (bottom)**. Those are the two resistors to use. **Error from target** says how close the result is.
+8. Look at the table. The first row (highlighted) is the best match. Lower rows are alternatives, handy if you already have one of those values.
+9. If you entered a load, read **Output with load** to see what you will really get.
+
 ## Worked example
 
 Scale 5 V to about 3.3 V. With E24 values the calculator finds **R1 = 4.7 kΩ, R2 = 9.1 kΩ**, giving **3.297 V** (−0.09 % error) with 362 µA of divider current. Now add a 10 kΩ load: R2 in parallel with 10 kΩ is about 4.76 kΩ, and the output drops to roughly **2.52 V**. That is the lesson of loading, and why a divider is not a power supply.

@@ -28,6 +28,18 @@ The result is rounded **down** to a standard E24 value so there is a little extr
 
 You get the base current, the calculated base resistor, the standard E24 value to use, the real base current with that value, and the resistor's dissipation. If the transistor's minimum hFE is lower than the forced beta, the tool warns you that it may not saturate.
 
+## Step by step
+
+Open the **BJT Switch** tab. It opens with a 100 mA load from a 5 V pin.
+
+1. In **Load current (mA)**, type the current the load draws, for example `100`. Check it on the load's datasheet or measure it.
+2. In **Drive voltage from the pin (V)**, type the high-level voltage of the signal that turns it on, for example `5` or `3.3`.
+3. In **Base-emitter drop (V)**, leave `0.7`.
+4. In **Forced beta**, leave `10`. Use a smaller number such as `5` if you want extra margin.
+5. In **Transistor minimum hFE (optional)**, type the minimum gain from the datasheet, for example `100`. If the transistor is too weak, the tool shows a warning.
+6. Read **Use this standard value (E24)**. Put that resistor between your pin and the transistor's base.
+7. Check **Base current needed** against what your pin can supply (often 20 mA at most). If it is too much, use a transistor with higher gain, a lower forced beta, or a MOSFET.
+
 ## Worked example
 
 Switch a 100 mA load from a 5 V pin. Base current = 100 ÷ 10 = **10 mA**. Rb = (5 − 0.7) ÷ 0.01 = **430 Ω**, which is a standard E24 value. Check the pin can supply 10 mA (see below).

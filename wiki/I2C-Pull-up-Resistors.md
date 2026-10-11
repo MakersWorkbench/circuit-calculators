@@ -32,6 +32,17 @@ The limits from the NXP I²C specification (UM10204):
 
 You get the **maximum** and **minimum** pull-up value and, when the window is open, a **suggested E24 value** near the middle. If the window is closed (the minimum is bigger than the maximum), the tool says no value works. Then reduce the bus capacitance (shorter wires, fewer devices), slow the bus down, or add an I²C buffer.
 
+## Step by step
+
+Open the **I²C Pull-up** tab. It opens with 3.3 V, Fast mode, and 100 pF.
+
+1. In **Bus supply (V)**, type the voltage your I²C devices run on, usually `3.3` or `5`.
+2. In **Bus speed**, choose the speed your code sets. Arduino's Wire library and most sensors default to **Standard 100 kHz**. Many also support **Fast 400 kHz**.
+3. In **Total bus capacitance (pF)**, estimate the total. For a short breadboard bus with a couple of devices, `50` to `100` is a reasonable guess. Add more for long cables.
+4. Read **Maximum pull-up** and **Minimum pull-up**. Any resistor between those two values will work.
+5. Read **Suggested standard value (E24)**. Use that resistor on SDA and another on SCL, each connected to the supply.
+6. If the result says no value works, reduce the capacitance (shorter wires or fewer devices) or lower the **Bus speed**, and watch the numbers again.
+
 ## Worked example
 
 3.3 V, Fast mode (400 kHz), 100 pF. The maximum is **3.54 kΩ** and the minimum is **967 Ω**. The tool suggests **1.8 kΩ**. For 100 kHz the usual 4.7 kΩ is common, and 2.2 kΩ is common at 400 kHz.

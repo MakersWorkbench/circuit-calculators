@@ -36,6 +36,18 @@ Below the four values you get the **power dissipated**, which is the heat the pa
 - **Smallest rating that works**: the first standard size (1/8, 1/4, 1/2, 1, 2, 3, 5, 10, 25, 50, 100 W) that is not smaller than the power. A resistor at exactly its limit runs very hot.
 - **Recommended resistor rating**: the first standard size that is at least **twice** the power. This is a common "50 % derating" rule of thumb. A resistor that only works at half its rating runs cooler and lasts longer. The calculator also shows the safety margin, so 0.24 W on a 1/2 W part reads "2.1× safety margin".
 
+## Step by step
+
+Open the **Ohm's Law** tab. It is the first tab, and it opens with 12 V and 20 mA already filled in.
+
+1. Look at the four boxes: **Voltage (V)**, **Current (A)**, **Resistance (Ω)**, and **Power (W)**.
+2. Click in the **Voltage (V)** box and type the voltage you know, for example `5`.
+3. Click in the **Current (A)** box and type the current, for example `20m` for 20 milliamps.
+4. The **Resistance** and **Power** boxes fill in by themselves and turn blue. Blue means "calculated", not "typed".
+5. Want to work from different values instead? Just click another box and type. Say you now know the resistor is `330`: click **Resistance (Ω)** and type `330`. The two boxes you typed in most recently (here Current and Resistance) become the inputs, so Voltage and Power turn blue and recalculate. To make Voltage an input again, click it and type a value.
+6. Read the list under the boxes: **Power dissipated** tells you how much heat the part makes, and **Recommended resistor rating** tells you what wattage of resistor to buy.
+7. Click **Clear** to empty all four boxes and begin again.
+
 ## Worked example
 
 You want 20 mA through a load from a 12 V supply. Enter `12` and `20m`. The calculator shows resistance **600 Ω** and power **240 mW**. The smallest rating that works is 1/4 W, but the recommended rating is **1/2 W** (2.1× margin).

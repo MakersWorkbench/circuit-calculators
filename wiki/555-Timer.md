@@ -31,6 +31,25 @@ In monostable mode enter the resistor in the **R1** box (R2 is not used).
 2. Enter **R1**, **R2** (astable only), and **C**.
 3. Read the frequency, period, high and low times, and duty cycle (astable), or the pulse length (monostable).
 
+## Step by step
+
+Open the **555 Timer** tab. It opens in astable mode with 1 kΩ, 10 kΩ, and 1 µF.
+
+**To make a blinker or clock (astable):**
+
+1. Make sure **Mode** says **Astable (oscillator)**.
+2. In **R1 (Ω)**, type the resistor connected from the supply to the 555's discharge pin, for example `1k`.
+3. In **R2 (Ω, astable only)**, type the resistor between the discharge pin and the capacitor, for example `10k`.
+4. In **Capacitor C (F)**, type the timing capacitor, for example `10u`.
+5. Read **Frequency** for blinks per second, and **Duty cycle** for the fraction of each cycle that the output is high. **High time** and **Low time** show how long the LED is on and off.
+6. Want a slower blink? Make C or R2 larger. A faster blink? Make them smaller.
+
+**To make a single timed pulse (monostable):**
+
+1. Change **Mode** to **Monostable (one pulse)**.
+2. Type your timing resistor in **R1 (Ω)** and the timing capacitor in **Capacitor C (F)**. The R2 box is ignored.
+3. Read **Output pulse length**. For example `10k` and `10u` give 110 ms.
+
 ## Worked examples
 
 - **Astable**: R1 = 1 kΩ, R2 = 10 kΩ, C = 1 µF. High 7.6 ms, low 6.9 ms, period 14.6 ms, **frequency about 68.7 Hz**, duty cycle **52.4 %**. That blinks an LED so fast it looks steady, so use a bigger C (such as 100 µF) for a visible blink.

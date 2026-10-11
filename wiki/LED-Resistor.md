@@ -35,6 +35,19 @@ where Vs is the supply voltage and I is the current you want (commonly 10 to 20 
 
 **In parallel**, each LED gets its own resistor. It is tempting to share one resistor across several LEDs, but LEDs of the same model still differ slightly in Vf, and the one with the lowest Vf takes more than its share of current and can burn out first. A resistor per LED avoids that.
 
+## Step by step
+
+Open the **LED Resistor** tab. It opens with 5 V, a 2 V LED, and 20 mA filled in.
+
+1. In **Supply voltage (V)**, type the voltage that will power the LED, for example `5` (a 5 V Arduino pin) or `3.3`.
+2. In **LED forward voltage (V)**, type the LED's forward voltage from its datasheet or packaging. If you are not sure, use `2` for red, yellow, or green, and `3.2` for blue or white.
+3. In **LED current (mA)**, type the current you want. Type `20` for 20 mA, or a smaller number like `10` for a gentler, longer-lasting glow.
+4. In **Number of LEDs**, type how many you are lighting, for example `1`.
+5. In **Wiring**, choose **Series (one resistor)** if the LEDs are chained one after another, or **Parallel (resistor each)** if each LED has its own resistor.
+6. In **Standard values**, leave **E24 (5 %)** unless you only have E12 resistors in your kit.
+7. Read the drawing, which shows exactly how to connect the parts, then read **Next standard value up**. That is the resistor to put in the circuit. **Recommended resistor rating** tells you the wattage.
+8. If you see a red message about the supply being too low, you have too many LEDs in series for that voltage. Reduce the count or switch **Wiring** to parallel.
+
 ## Worked examples
 
 - **One red LED on 5 V**: Vf = 2 V, I = 20 mA. R = (5 − 2) ÷ 0.02 = **150 Ω**, which is a standard E24 value. The resistor dissipates 60 mW, so a 1/8 W part is enough.

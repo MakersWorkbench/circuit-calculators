@@ -21,6 +21,24 @@ Choose what you want to find:
 
 Both also show the **minimum input voltage**.
 
+## Step by step
+
+Open the **LM317** tab. It opens set to find R2 for a 9 V output.
+
+**To find the resistor for a voltage you want:**
+
+1. Make sure **I want to** says **Find R2 for a target voltage**.
+2. In **R1 (Ω)**, type `240` (the usual value) or the resistor you have between OUT and ADJ.
+3. In **Target output (V)**, type the voltage you want, for example `9`.
+4. Read **Nearest E96 value**. That is the resistor to connect from ADJ to ground. **Actual output with that value** shows the voltage you will really get with that resistor.
+5. Read **Minimum input voltage**. Your input supply must be at least that high.
+
+**To check a circuit you already built:**
+
+1. Change **I want to** to **Find the voltage from R1 and R2**.
+2. Type both resistors in **R1 (Ω)** and **R2 (Ω)**.
+3. Read **Output voltage**.
+
 ## Worked example
 
 You want 9 V with R1 = 240 Ω. The exact R2 is about 1,474 Ω. The nearest E96 value is 1.47 kΩ, which gives about **8.98 V**.
